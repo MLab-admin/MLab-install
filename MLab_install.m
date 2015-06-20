@@ -179,6 +179,9 @@ pause(dpt);
 
 % --- Installation file self-destruction
 
+fprintf('Self-destruction of the installer ...'); tic
+mkdir([root 'Plugins']);
+
 % Definition
 fname = [mfilename('fullpath') '.m'];
 
@@ -190,6 +193,9 @@ end
 
 % Remove installation file
 delete(fname);
+
+fprintf(' %.2f sec\n', toc);
+pause(dpt);
 
 % --- Final message
 fprintf('\n<strong>Your </strong>[\b<strong>MLab</strong>]\b<strong> install is successful !</strong>\n\n');
