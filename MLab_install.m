@@ -182,18 +182,16 @@ pause(dpt);
 % Definition
 fname = [mfilename('fullpath') '.m'];
 
-% % % % Close installation file in the editor
-% % % if matlab.desktop.editor.isEditorAvailable
-% % %     tmp = matlab.desktop.editor.getActive;
-% % %     if strcmp(fname, tmp.Filename), tmp.close; end
-% % % end
-% % % 
-% % % % Remove installation file
-% % % delete(fname);
+% Close installation file in the editor
+if matlab.desktop.editor.isEditorAvailable
+    tmp = matlab.desktop.editor.getActive;
+    if strcmp(fname, tmp.Filename), tmp.close; end
+end
 
+% Remove installation file
+delete(fname);
+
+% --- Final message
 fprintf('\n<strong>Your </strong>[\b<strong>MLab</strong>]\b<strong> install is successful !</strong>\n\n');
-
 fprintf('You can start [\bMLab]\b by running the following program (clickable link):\n');
-
-fprintf('\t<a href="matlab:cd(''%s''); ML.start;">%s</a>\n\n', ...
-    root, [root '+ML' filesep 'start.m']);
+fprintf('\t<a href="matlab:cd(''%s''); ML.start;">%s</a>\n\n', root, [root '+ML' filesep 'start.m']);
