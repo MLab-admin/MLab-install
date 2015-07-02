@@ -178,31 +178,33 @@ end
 
 clc
 
+% Header diplay
 if usejava('desktop')
     fprintf('\n--- [\b<strong>MLab installation</strong>]\b %s\n\n', repmat('-', [1 cws(1)-23]));
 else
     fprintf('\n--- \033[1;33;40mMLab installation\033[0m %s\n\n', repmat('-', [1 cws(1)-23]));
 end
 
-% Modify configuration file
-cfname = [prefdir filesep 'MLab.mat'];
-if exist(cfname, 'file')
-    fprintf('Modifying MLab configuration file ...'); tic
-    tmp = load(cfname);
-    config = tmp.config;
-    
-    if isfield(config, 'updates')
-        config = rmfield(config, 'updates');
-    end
-    if isfield(config, 'plugins')
-        config = rmfield(config, 'plugins');
-    end
-    config.path = root;
-    config.repo = repo;
-    
-    save(cfname, 'config');
-    fprintf(' %.2f sec\n', toc);
-    pause(dpt);
+% Create startup file
+suc = ['if exist([prefdir filesep ''MLab.mat''], ''file'')' char(10) ...
+       char(9) 'tmp = load([prefdir filesep ''MLab.mat'']);' char(10) ...
+       char(9) 'addpath(genpath(tmp.config.path), ''-end'');' char(10)...
+       char(9) 'if tmp.config.startup.autostart' char(10)...
+       char([9 9]) 'ML.start' char(10)...
+       char(9) 'end' char(10)...
+       'end' char([10 10])];
+
+sname = fullfile(matlabroot, 'toolbox', 'local', 'startup.m');
+[fid, msg] = fopen(sname, 'w');
+if fid<0
+    warning('ML:install:fopenError', msg);
+else
+    fprintf(fid, '%% === MLab startup ========================================================\n');
+    fprintf(fid, '%% This code has been generated automatically, please do not modify it.\n\n');
+    fprintf(fid, '%s', suc);
+    fprintf(fid, '%% =========================================================================\n');
+    fclose(fid);
+    rehash toolbox
 end
 
 % Remove MLab folder
@@ -234,6 +236,37 @@ mkdir([root 'Plugins']);
 fprintf(' %.2f sec\n', toc);
 pause(dpt);
 
+% Install / Modify configuration file
+cfname = [prefdir filesep 'MLab.mat'];
+if exist(cfname, 'file')
+    
+    fprintf('Modifying MLab configuration file ...'); tic
+    tmp = load(cfname);
+    config = tmp.config;
+    
+    if isfield(config, 'updates')
+        config = rmfield(config, 'updates');
+    end
+    if isfield(config, 'plugins')
+        config = rmfield(config, 'plugins');
+    end
+    config.path = root;
+    config.repository = repo;
+    
+    save(cfname, 'config');
+    fprintf(' %.2f sec\n', toc);
+    pause(dpt);
+    
+else
+    
+    tmp = pwd;
+    cd(root);
+    ML.Config.default;
+    cd(pwd);
+    
+end
+
+
 % --- Installation file self-destruction
 
 fprintf('Self-destruction of the installer ...'); tic
@@ -248,7 +281,7 @@ if usejava('desktop') && matlab.desktop.editor.isEditorAvailable
 end
 
 % Remove installation file
-% delete(fname);
+delete(fname);
 
 fprintf(' %.2f sec\n', toc);
 pause(dpt);
@@ -262,8 +295,7 @@ if usejava('desktop')
         [repmat(' ', [1 cws(1)-37]) char(9474)], ...
         [char(9492) repmat(char(9472), [1 cws(1)-3]) char(9496)]);
     
-    fprintf('\nYou can start [\bMLab]\b by running the following program (clickable link):\n');
-    fprintf('\t<a href="matlab:cd(''%s''); ML.start;">%s</a>\n\n', root, [root '+ML' filesep 'start.m']);
+    fprintf('\nYou can start [\bMLab]\b by <a href="matlab:startup;">clicking here</a>.\n');
 
 else
     
@@ -272,6 +304,6 @@ else
         [repmat(' ', [1 cws(1)-37]) char(9474)], ...
         [char(9492) repmat(char(9472), [1 cws(1)-3]) char(9496)]);
     
-    fprintf('\nYou can start \033[1;33;40mMLab\033[0m by adding the %s package in your path and running the following command :\n', [root '+ML']);
-    fprintf('\tML.start\n\n');
+    fprintf('\nYou can start \033[1;33;40mMLab\033[0m by excuting the "startup" command.\n');
+    
 end
