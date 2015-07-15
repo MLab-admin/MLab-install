@@ -242,27 +242,33 @@ if exist(cfname, 'file')
     
     fprintf('Modifying MLab configuration file ...'); tic
     tmp = load(cfname);
-    config = tmp.config;
+    oldconf = tmp.config;
     
-    if isfield(config, 'updates')
-        config = rmfield(config, 'updates');
+    % Reset to default configuration
+    cpwd = pwd;
+    cd(root);
+    ML.Config.default;
+    
+    tmp = load(cfname);
+    config = tmp.confif;
+    
+    % Maintain changes
+    if isfield(oldconf, 'user')
+        config.user = oldconf.user;
     end
-    if isfield(config, 'plugins')
-        config = rmfield(config, 'plugins');
-    end
-    config.path = root;
-    config.repository = repo;
     
     save(cfname, 'config');
+    cd(cpwd);
+    
     fprintf(' %.2f sec\n', toc);
     pause(dpt);
     
 else
     
-    tmp = pwd;
+    ctmp = pwd;
     cd(root);
     ML.Config.default;
-    cd(pwd);
+    cd(ctmp);
     
 end
 
