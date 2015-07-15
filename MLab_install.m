@@ -250,7 +250,7 @@ if exist(cfname, 'file')
     ML.Config.default;
     
     tmp = load(cfname);
-    config = tmp.confif;
+    config = tmp.config;
     
     % Maintain changes
     if isfield(oldconf, 'user')
