@@ -272,6 +272,12 @@ else
     
 end
 
+% Set preference
+fprintf('Setting preferences ...'); tic
+setpref('MLab', 'path', root);
+fprintf(' %.2f sec\n', toc);
+pause(dpt);
+
 % --- Customize icon
 if isunix
     
