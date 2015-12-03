@@ -197,15 +197,35 @@ suc = ['if exist([prefdir filesep ''MLab.mat''], ''file'')' char(10) ...
 sname = fullfile(matlabroot, 'toolbox', 'local', 'startup.m');
 [fid, msg] = fopen(sname, 'w');
 if fid<0
-    warning('ML:install:fopenError', msg);
-else
-    fprintf(fid, '%% === MLab startup ========================================================\n');
-    fprintf(fid, '%% This code has been generated automatically, please do not modify it.\n\n');
-    fprintf(fid, '%s', suc);
-    fprintf(fid, '%% =========================================================================\n');
-    fclose(fid);
-    rehash toolbox
+
+    sdir = fullfile(matlabroot, 'toolbox', 'local');
+    [status, fa] = fileattrib(sdir);
+    
+    if isunix && ~fa.OtherWrite
+        fprintf('Root access is needed to write the startup.m file.\n Please enter the sudo password:');
+        unix(['sudo chmod o+w ' sdir]);
+    else
+        fileattrib(sdir, '+w', 'a');
+    end
+    
+    [fid, msg] = fopen(sname, 'w');
+    if fid<0
+        if usejava('desktop')
+            fprintf('\n[\b<strong>Error !</strong> The startup file could not be created.]\b\n\n');
+        else
+            fprintf('\n--- \033[1;33;40mError ! The startup file could not be created.\033[0m\n\n');
+        end
+        error('ML:install:fopenError', msg);
+    end
+    
 end
+
+fprintf(fid, '%% === MLab startup ========================================================\n');
+fprintf(fid, '%% This code has been generated automatically, please do not modify it.\n\n');
+fprintf(fid, '%s', suc);
+fprintf(fid, '%% =========================================================================\n');
+fclose(fid);
+rehash toolbox
 
 % Remove MLab folder
 if exist(root, 'dir')
