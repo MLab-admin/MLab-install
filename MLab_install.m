@@ -193,7 +193,8 @@ suc = ['if exist([prefdir filesep ''MLab.mat''], ''file'')' char(10) ...
        char([9 9]) 'ML.start' char(10)...
        char(9) 'end' char(10)...
        'end' char([10 10])];
-
+   
+upca = false;
 sname = fullfile(matlabroot, 'toolbox', 'local', 'startup.m');
 [fid, msg] = fopen(sname, 'w');
 if fid<0
@@ -202,8 +203,9 @@ if fid<0
     [status, fa] = fileattrib(sdir);
     
     if isunix && ~fa.OtherWrite
-        fprintf('Root access is needed to write the startup.m file.\n Please enter the sudo password:');
+        fprintf('Root access is needed to write the startup.m file.\n');
         unix(['sudo chmod o+w ' sdir]);
+        upca = true;
     else
         fileattrib(sdir, '+w', 'a');
     end
@@ -225,6 +227,10 @@ fprintf(fid, '%% This code has been generated automatically, please do not modif
 fprintf(fid, '%s', suc);
 fprintf(fid, '%% =========================================================================\n');
 fclose(fid);
+
+if upca
+    unix(['sudo chmod o-w ' sdir]);
+end
 rehash toolbox
 
 % Remove MLab folder
